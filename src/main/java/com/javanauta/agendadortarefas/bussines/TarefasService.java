@@ -1,0 +1,33 @@
+package com.javanauta.agendadortarefas.bussines;
+
+import com.javanauta.agendadortarefas.bussines.dto.TarefasDTO;
+import com.javanauta.agendadortarefas.bussines.mapper.TarefasConverter;
+import com.javanauta.agendadortarefas.infraestructure.entity.TarefasEntity;
+import com.javanauta.agendadortarefas.infraestructure.enums.StatusNotificacaoEnum;
+import com.javanauta.agendadortarefas.infraestructure.repository.TarefasRepository;
+import com.javanauta.agendadortarefas.infraestructure.security.JwtUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+
+@Service
+@RequiredArgsConstructor
+public class TarefasService {
+
+    private final TarefasRepository tarefasRepository;
+    private final TarefasConverter tarefaConverter;
+    private final JwtUtil jwtUtil;
+
+    public TarefasDTO gravarTarefa(String token, TarefasDTO dto){
+        String email = jwtUtil.extrairEmailToken(token.substring(7));
+
+        dto.setDataCriacao(LocalDateTime.now());
+        dto.setStatusNotificacaoEnum(StatusNotificacaoEnum.PENDENTE);
+        dto.setEmailUsuario(email);
+        TarefasEntity entity = tarefaConverter.paraTarefaEnity(dto);
+
+        return tarefaConverter.paraTarefaDTO(
+                tarefasRepository.save(entity));
+    }
+}
